@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/tvStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textSize="18sp"
+        android:layout_gravity="center_horizontal"/>
+
+    <ImageButton
+        android:id="@+id/btnRetry"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@android:drawable/ic_menu_rotate"
+        android:visibility="gone"
+        android:layout_gravity="center_horizontal"
+        android:background="?android:attr/selectableItemBackgroundBorderless"
+        android:contentDescription="Повторить"/>
+
+    <LinearLayout
+        android:id="@+id/layoutContent"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <LinearLayout
+            android:id="@+id/layoutConnectionStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/tvConnectionState"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textSize="16sp"
+                android:text="ПОДКЛЮЧЕН"
+                android:textColor="#00FF00"
+                android:gravity="center"/>
+
+            <ImageButton
+                android:id="@+id/btnReconnect"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@android:drawable/ic_menu_rotate"
+                android:visibility="gone"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Переподключиться"/>
+        </LinearLayout>
+
+        <EditText
+            android:id="@+id/etContent"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="top"
+            android:hint="Текст блокнота..."
+            android:maxLines="1000"
+            android:background="@android:drawable/editbox_background"
+            android:padding="8dp"
+            android:textColor="#000000"/>
+
+    </LinearLayout>
+
+</LinearLayout>

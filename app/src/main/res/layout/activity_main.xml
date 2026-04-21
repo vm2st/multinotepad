@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center_horizontal"
+    android:padding="16dp"
+    tools:context=".MainActivity">
+
+    <!-- Верхняя часть с заголовком -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:gravity="center">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Блокнот с другом"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:textColor="#2196F3"
+            android:layout_marginBottom="8dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="по Bluetooth"
+            android:textSize="18sp"
+            android:textColor="#666666"/>
+    </LinearLayout>
+
+    <!-- Кнопки -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginBottom="32dp">
+
+        <Button
+            android:id="@+id/btn_host"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Создать блокнот"
+            android:layout_marginBottom="16dp"/>
+
+        <Button
+            android:id="@+id/btn_client"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Подключиться к блокноту"/>
+    </LinearLayout>
+
+    <!-- Нижняя часть с ссылкой и подписью -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:layout_marginBottom="16dp">
+
+        <!-- Ссылка на Telegram -->
+        <TextView
+            android:id="@+id/tvTelegramLink"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Telegram"
+            android:textColor="#2196F3"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:autoLink="none"
+            android:linksClickable="true"
+            android:clickable="true"
+            android:focusable="true"
+            android:padding="8dp"
+            android:textColorLink="#2196F3"/>
+
+        <!-- Подпись by vm2 studios -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="by vm2 studios"
+            android:textSize="14sp"
+            android:textColor="#666666"
+            android:layout_marginTop="4dp"/>
+    </LinearLayout>
+
+</LinearLayout>
