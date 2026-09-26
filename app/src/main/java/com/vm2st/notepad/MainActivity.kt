@@ -1,28 +1,41 @@
 package com.vm2st.notepad
 
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Button
-import androidx.appcompat.app.AppCompatActivity
 import android.widget.TextView
-import android.net.Uri
+import android.widget.Toast
+import androidx.core.net.toUri
+import com.google.android.material.appbar.MaterialToolbar
+import com.google.android.material.button.MaterialButton
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : ThemedActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        findViewById<Button>(R.id.btn_host).setOnClickListener {
+        setupThemedScreen(
+            findViewById(R.id.rootContainer),
+            findViewById<MaterialToolbar>(R.id.topAppBar),
+            showBackButton = false
+        )
+
+        findViewById<MaterialButton>(R.id.btnHost).setOnClickListener {
             startActivity(Intent(this, HostActivity::class.java))
         }
-        findViewById<Button>(R.id.btn_client).setOnClickListener {
+        findViewById<MaterialButton>(R.id.btnClient).setOnClickListener {
             startActivity(Intent(this, ClientActivity::class.java))
         }
-
-        // Обработка ссылки на Telegram
-        val telegramLink = findViewById<TextView>(R.id.tvTelegramLink)
-        telegramLink.setOnClickListener {
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/vm2_studios"))
-            startActivity(intent)
+        findViewById<TextView>(R.id.tvTelegramLink).setOnClickListener {
+            try {
+                startActivity(Intent(Intent.ACTION_VIEW, TELEGRAM_URL.toUri()))
+            } catch (_: ActivityNotFoundException) {
+                Toast.makeText(this, R.string.link_open_failed, Toast.LENGTH_SHORT).show()
+            }
         }
-    }}
+    }
+
+    private companion object {
+        const val TELEGRAM_URL = "https://t.me/vm2_studios"
+    }
+}

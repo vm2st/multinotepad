@@ -4,249 +4,362 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothManager
 import android.bluetooth.BluetoothSocket
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.provider.Settings
 import android.text.Editable
+import android.text.InputFilter
+import android.text.InputType
 import android.text.TextWatcher
 import android.view.View
 import android.widget.EditText
-import android.widget.ImageButton
-import android.widget.LinearLayout
+import android.widget.FrameLayout
 import android.widget.TextView
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
-import java.io.DataInputStream
-import java.io.DataOutputStream
+import com.google.android.material.appbar.MaterialToolbar
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.textfield.TextInputLayout
 import java.io.IOException
-import java.util.UUID
+import java.util.concurrent.Executors
+import java.util.concurrent.atomic.AtomicBoolean
 
-class ClientActivity : AppCompatActivity() {
+class ClientActivity : ThemedActivity() {
     private lateinit var tvStatus: TextView
-    private lateinit var btnRetry: ImageButton
-    private lateinit var layoutContent: LinearLayout
+    private lateinit var btnConnect: MaterialButton
+    private lateinit var noteInputLayout: TextInputLayout
     private lateinit var etContent: EditText
-    private lateinit var layoutConnectionStatus: LinearLayout
-    private lateinit var tvConnectionState: TextView
-    private lateinit var btnReconnect: ImageButton
 
-    private var bluetoothAdapter: BluetoothAdapter? = null
-    private var clientSocket: BluetoothSocket? = null
-    private var dataInputStream: DataInputStream? = null
-    private var dataOutputStream: DataOutputStream? = null
-    private var isConnected = false
-    private var isUpdating = false
-    private val uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
-    private val REQUEST_BLUETOOTH_PERMISSIONS = 101
+    private val mainHandler = Handler(Looper.getMainLooper())
+    private val connectExecutor = Executors.newSingleThreadExecutor()
+    private val connecting = AtomicBoolean(false)
+    private val stopping = AtomicBoolean(false)
+
+    @Volatile
+    private var pendingSocket: BluetoothSocket? = null
+
+    @Volatile
+    private var connection: NoteConnection? = null
+
+    private var applyingRemoteText = false
+    private var lastDevice: BluetoothDevice? = null
+    private var lastAccessCode: Int? = null
+    private val revisionTracker = ClientRevisionTracker()
+
+    private val sendNote = Runnable {
+        val text = etContent.text?.toString().orEmpty()
+        NoteStorage.save(this, text)
+        connection?.sendEdit(revisionTracker.current, text)
+    }
+
+    private val permissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            ensureBluetoothReady()
+        } else {
+            showDisconnected(R.string.bluetooth_required)
+        }
+    }
+
+    private val enableBluetoothLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) {
+        if (bluetoothAdapter()?.isEnabled == true) {
+            showDeviceSelectionDialog()
+        } else {
+            showDisconnected(R.string.bluetooth_disabled)
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_client)
 
+        setupThemedScreen(
+            findViewById(R.id.rootContainer),
+            findViewById<MaterialToolbar>(R.id.topAppBar),
+            showBackButton = true
+        )
+
         tvStatus = findViewById(R.id.tvStatus)
-        btnRetry = findViewById(R.id.btnRetry)
-        layoutContent = findViewById(R.id.layoutContent)
+        btnConnect = findViewById(R.id.btnConnect)
+        noteInputLayout = findViewById(R.id.noteInputLayout)
         etContent = findViewById(R.id.etContent)
-        layoutConnectionStatus = findViewById(R.id.layoutConnectionStatus)
-        tvConnectionState = findViewById(R.id.tvConnectionState)
-        btnReconnect = findViewById(R.id.btnReconnect)
 
-        layoutContent.visibility = View.GONE
-        layoutConnectionStatus.visibility = View.GONE
+        etContent.filters = arrayOf(InputFilter.LengthFilter(BluetoothProtocol.MAX_NOTE_CHARACTERS))
+        etContent.setText(NoteStorage.load(this))
+        etContent.setSelection(etContent.text?.length ?: 0)
+        etContent.addTextChangedListener(noteWatcher)
 
-        etContent.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-            override fun afterTextChanged(s: Editable?) {
-                if (!isUpdating && isConnected) {
-                    val newText = s.toString()
-                    try {
-                        dataOutputStream?.writeUTF(newText)
-                        dataOutputStream?.flush()
-                    } catch (e: IOException) {
-                        e.printStackTrace()
-                    }
-                }
-            }
-        })
-
-        checkPermissionsAndStart()
-    }
-
-    private fun checkPermissionsAndStart() {
-        val permissions = mutableListOf<String>()
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            permissions.add(Manifest.permission.BLUETOOTH_CONNECT)
-            permissions.add(Manifest.permission.BLUETOOTH_SCAN)
-        } else {
-            permissions.add(Manifest.permission.BLUETOOTH)
-            permissions.add(Manifest.permission.BLUETOOTH_ADMIN)
-            permissions.add(Manifest.permission.ACCESS_FINE_LOCATION)
-            permissions.add(Manifest.permission.ACCESS_COARSE_LOCATION)
-        }
-
-        val missingPermissions = permissions.filter {
-            ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
-        }
-
-        if (missingPermissions.isNotEmpty()) {
-            ActivityCompat.requestPermissions(this, missingPermissions.toTypedArray(), REQUEST_BLUETOOTH_PERMISSIONS)
-        } else {
-            showDeviceSelectionDialog()
-        }
-    }
-
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == REQUEST_BLUETOOTH_PERMISSIONS) {
-            if (grantResults.all { it == PackageManager.PERMISSION_GRANTED }) {
-                showDeviceSelectionDialog()
+        btnConnect.setOnClickListener {
+            val device = lastDevice
+            val code = lastAccessCode
+            if (device != null && code != null && connection == null) {
+                connectToDevice(device, code)
             } else {
-                Toast.makeText(this, "Необходимы разрешения Bluetooth", Toast.LENGTH_LONG).show()
-                finish()
+                ensureBluetoothReady()
             }
+        }
+        showDisconnected(R.string.status_disconnected)
+        ensureBluetoothReady()
+    }
+
+    private val noteWatcher = object : TextWatcher {
+        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
+        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) = Unit
+
+        override fun afterTextChanged(s: Editable?) {
+            if (applyingRemoteText || connection == null) return
+            revisionTracker.onLocalChange()
+            mainHandler.removeCallbacks(sendNote)
+            mainHandler.postDelayed(sendNote, NOTE_DEBOUNCE_MILLIS)
         }
     }
 
-    @SuppressLint("MissingPermission")
-    private fun showDeviceSelectionDialog() {
-        bluetoothAdapter = BluetoothAdapter.getDefaultAdapter()
-        if (bluetoothAdapter == null) {
-            Toast.makeText(this, "Bluetooth не поддерживается", Toast.LENGTH_LONG).show()
-            finish()
+    private fun ensureBluetoothReady() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+            ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.BLUETOOTH_CONNECT
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            permissionLauncher.launch(Manifest.permission.BLUETOOTH_CONNECT)
             return
         }
 
-        if (!bluetoothAdapter!!.isEnabled) {
-            Toast.makeText(this, "Включите Bluetooth", Toast.LENGTH_LONG).show()
-            finish()
+        val adapter = bluetoothAdapter()
+        if (adapter == null) {
+            showDisconnected(R.string.bluetooth_not_supported)
             return
         }
-
-        val pairedDevices = bluetoothAdapter!!.bondedDevices
-        if (pairedDevices.isEmpty()) {
-            Toast.makeText(this, "Нет сопряжённых устройств. Сначала выполните сопряжение в настройках Bluetooth.", Toast.LENGTH_LONG).show()
-            finish()
+        if (!adapter.isEnabled) {
+            runCatching {
+                enableBluetoothLauncher.launch(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE))
+            }.onFailure {
+                showDisconnected(R.string.bluetooth_disabled)
+            }
             return
         }
-
-        val deviceNames = pairedDevices.map { it.name }
-        val devicesArray = deviceNames.toTypedArray()
-
-        AlertDialog.Builder(this)
-            .setTitle("Выберите устройство хоста")
-            .setItems(devicesArray) { _, which ->
-                val selectedDevice = pairedDevices.elementAt(which)
-                connectToDevice(selectedDevice)
-            }
-            .setNegativeButton("Отмена") { _, _ -> finish() }
-            .show()
-    }
-
-    @SuppressLint("MissingPermission")
-    private fun connectToDevice(device: BluetoothDevice) {
-        tvStatus.text = "Подключение..."
-        btnRetry.visibility = View.GONE
-        layoutContent.visibility = View.GONE
-        layoutConnectionStatus.visibility = View.GONE
-
-        Thread {
-            try {
-                clientSocket = device.createRfcommSocketToServiceRecord(uuid)
-                clientSocket?.connect()
-
-                dataInputStream = DataInputStream(clientSocket!!.inputStream)
-                dataOutputStream = DataOutputStream(clientSocket!!.outputStream)
-                isConnected = true
-
-                runOnUiThread { onConnected() }
-
-                listenForMessages()
-
-            } catch (e: IOException) {
-                e.printStackTrace()
-                runOnUiThread {
-                    onConnectionFailed("Ошибка подключения")
-                }
-            }
-        }.start()
-    }
-
-    private fun onConnectionFailed(reason: String) {
-        tvStatus.text = reason
-        btnRetry.visibility = View.VISIBLE
-        btnRetry.setOnClickListener { showDeviceSelectionDialog() }
-        layoutContent.visibility = View.GONE
-        layoutConnectionStatus.visibility = View.GONE
-    }
-
-    private fun onConnected() {
-        tvStatus.visibility = View.GONE
-        btnRetry.visibility = View.GONE
-        layoutContent.visibility = View.VISIBLE
-        layoutConnectionStatus.visibility = View.VISIBLE
-        tvConnectionState.text = "ПОДКЛЮЧЕН"
-        tvConnectionState.setTextColor(android.graphics.Color.GREEN)
-        btnReconnect.visibility = View.GONE
-    }
-
-    private fun listenForMessages() {
-        Thread {
-            try {
-                while (true) {
-                    val message = dataInputStream?.readUTF() ?: break
-                    runOnUiThread {
-                        val selectionStart = etContent.selectionStart
-                        val selectionEnd = etContent.selectionEnd
-
-                        isUpdating = true
-                        etContent.setText(message)
-                        isUpdating = false
-
-                        val length = etContent.text.length
-                        if (selectionStart <= length && selectionEnd <= length) {
-                            etContent.setSelection(selectionStart, selectionEnd)
-                        } else {
-                            etContent.setSelection(length)
-                        }
-                    }
-                }
-                onDisconnected()
-            } catch (e: IOException) {
-                onDisconnected()
-            }
-        }.start()
-    }
-
-    private fun onDisconnected() {
-        isConnected = false
-        runOnUiThread {
-            tvConnectionState.text = "ОТКЛЮЧЁН"
-            tvConnectionState.setTextColor(android.graphics.Color.RED)
-            btnReconnect.visibility = View.VISIBLE
-            btnReconnect.setOnClickListener { reconnect() }
-        }
-        try {
-            clientSocket?.close()
-        } catch (_: Exception) {}
-        clientSocket = null
-        dataInputStream = null
-        dataOutputStream = null
-    }
-
-    private fun reconnect() {
-        onDisconnected()
         showDeviceSelectionDialog()
     }
 
+    private fun bluetoothAdapter(): BluetoothAdapter? =
+        getSystemService(BluetoothManager::class.java)?.adapter
+
+    @SuppressLint("MissingPermission")
+    private fun showDeviceSelectionDialog() {
+        val adapter = bluetoothAdapter() ?: return
+        val devices = adapter.bondedDevices
+            .sortedWith(compareBy({ it.name.orEmpty().lowercase() }, { it.address }))
+        if (devices.isEmpty()) {
+            MaterialAlertDialogBuilder(this)
+                .setTitle(R.string.select_host_device)
+                .setMessage(R.string.paired_devices_empty)
+                .setPositiveButton(R.string.open_bluetooth_settings) { _, _ ->
+                    startActivity(Intent(Settings.ACTION_BLUETOOTH_SETTINGS))
+                }
+                .setNegativeButton(R.string.cancel, null)
+                .show()
+            return
+        }
+
+        val labels = devices.map { device ->
+            val name = device.name?.takeIf { it.isNotBlank() }
+                ?: getString(R.string.unknown_device)
+            "$name · ${device.address.takeLast(5)}"
+        }.toTypedArray()
+
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.select_host_device)
+            .setItems(labels) { _, which ->
+                showAccessCodeDialog(devices[which])
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
+    private fun showAccessCodeDialog(device: BluetoothDevice) {
+        val input = EditText(this).apply {
+            hint = getString(R.string.access_code_input_hint)
+            inputType = InputType.TYPE_CLASS_NUMBER
+            filters = arrayOf(InputFilter.LengthFilter(ACCESS_CODE_LENGTH))
+            textSize = 22f
+            textAlignment = View.TEXT_ALIGNMENT_CENTER
+        }
+        val container = FrameLayout(this).apply {
+            val horizontal = (24 * resources.displayMetrics.density).toInt()
+            setPadding(horizontal, 0, horizontal, 0)
+            addView(
+                input,
+                FrameLayout.LayoutParams(
+                    FrameLayout.LayoutParams.MATCH_PARENT,
+                    FrameLayout.LayoutParams.WRAP_CONTENT
+                )
+            )
+        }
+
+        val dialog = MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.access_code_dialog_title)
+            .setMessage(R.string.access_code_dialog_message)
+            .setView(container)
+            .setPositiveButton(R.string.connect, null)
+            .setNegativeButton(R.string.cancel, null)
+            .create()
+        dialog.setOnShowListener {
+            dialog.getButton(android.app.AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                val value = input.text?.toString().orEmpty()
+                val code = value.toIntOrNull()
+                if (value.length == ACCESS_CODE_LENGTH && code != null) {
+                    dialog.dismiss()
+                    lastDevice = device
+                    lastAccessCode = code
+                    connectToDevice(device, code)
+                } else {
+                    input.error = getString(R.string.access_code_dialog_message)
+                }
+            }
+        }
+        dialog.show()
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun connectToDevice(device: BluetoothDevice, accessCode: Int) {
+        if (!connecting.compareAndSet(false, true) || stopping.get()) return
+        connection?.close()
+        connection = null
+        showConnecting()
+
+        connectExecutor.execute {
+            var localConnection: NoteConnection? = null
+            try {
+                val socket = device.createRfcommSocketToServiceRecord(
+                    BluetoothProtocol.SERVICE_UUID
+                )
+                pendingSocket = socket
+                socket.connect()
+                if (stopping.get()) {
+                    socket.close()
+                    return@execute
+                }
+
+                localConnection = NoteConnection(socket)
+                if (!localConnection.authenticateAsClient(accessCode)) {
+                    localConnection.close()
+                    runOnUiThread { showDisconnected(R.string.wrong_code) }
+                    return@execute
+                }
+
+                connection = localConnection
+                runOnUiThread {
+                    revisionTracker.reset()
+                    showConnected()
+                }
+                localConnection.start(
+                    onFrame = { frame ->
+                        if (frame.type == BluetoothProtocol.TYPE_SNAPSHOT) {
+                            applySnapshot(localConnection, frame.revision, frame.text)
+                        }
+                    },
+                    onClosed = {
+                        if (connection === localConnection) {
+                            connection = null
+                            runOnUiThread {
+                                if (!stopping.get()) {
+                                    showDisconnected(R.string.connection_closed)
+                                }
+                            }
+                        }
+                    }
+                )
+            } catch (_: IOException) {
+                localConnection?.close()
+                runCatching { pendingSocket?.close() }
+                runOnUiThread {
+                    if (!stopping.get()) {
+                        showDisconnected(R.string.connection_failed)
+                    }
+                }
+            } catch (_: SecurityException) {
+                localConnection?.close()
+                runOnUiThread { showDisconnected(R.string.bluetooth_required) }
+            } finally {
+                pendingSocket = null
+                connecting.set(false)
+            }
+        }
+    }
+
+    private fun applySnapshot(
+        source: NoteConnection,
+        acknowledgedSequence: Long,
+        text: String
+    ) {
+        runOnUiThread {
+            if (stopping.get() || connection !== source) return@runOnUiThread
+            if (!revisionTracker.shouldApplySnapshot(acknowledgedSequence)) {
+                return@runOnUiThread
+            }
+            mainHandler.removeCallbacks(sendNote)
+            applyingRemoteText = true
+            applyTextPatch(etContent, text)
+            applyingRemoteText = false
+            NoteStorage.save(this, text)
+        }
+    }
+
+    private fun showConnecting() {
+        tvStatus.setText(R.string.status_connecting)
+        tvStatus.setTextColor(ContextCompat.getColor(this, R.color.status_waiting))
+        btnConnect.isEnabled = false
+        etContent.isEnabled = false
+        noteInputLayout.hint = getString(R.string.note_read_only_hint)
+    }
+
+    private fun showConnected() {
+        tvStatus.setText(R.string.status_connected)
+        tvStatus.setTextColor(ContextCompat.getColor(this, R.color.status_connected))
+        btnConnect.visibility = View.GONE
+        btnConnect.isEnabled = true
+        etContent.isEnabled = true
+        noteInputLayout.hint = getString(R.string.note_hint)
+    }
+
+    private fun showDisconnected(messageRes: Int) {
+        tvStatus.setText(messageRes)
+        tvStatus.setTextColor(ContextCompat.getColor(this, R.color.status_disconnected))
+        btnConnect.visibility = View.VISIBLE
+        btnConnect.isEnabled = true
+        btnConnect.setText(
+            if (lastDevice == null) R.string.select_device else R.string.reconnect
+        )
+        etContent.isEnabled = false
+        noteInputLayout.hint = getString(R.string.note_read_only_hint)
+        if (messageRes != R.string.status_disconnected) {
+            Toast.makeText(this, messageRes, Toast.LENGTH_LONG).show()
+        }
+    }
+
     override fun onDestroy() {
+        stopping.set(true)
+        mainHandler.removeCallbacks(sendNote)
+        NoteStorage.save(this, etContent.text?.toString().orEmpty())
+        connection?.close()
+        runCatching { pendingSocket?.close() }
+        connectExecutor.shutdownNow()
         super.onDestroy()
-        try {
-            clientSocket?.close()
-        } catch (_: Exception) {}
+    }
+
+    private companion object {
+        const val ACCESS_CODE_LENGTH = 6
+        const val NOTE_DEBOUNCE_MILLIS = 300L
     }
 }

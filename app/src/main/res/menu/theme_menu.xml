@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/action_theme"
+        android:title="@string/theme_menu"
+        app:showAsAction="never">
+        <menu>
+            <group
+                android:id="@+id/theme_group"
+                android:checkableBehavior="single">
+                <item
+                    android:id="@+id/theme_light"
+                    android:checkable="true"
+                    android:title="@string/theme_light" />
+                <item
+                    android:id="@+id/theme_dark"
+                    android:checkable="true"
+                    android:title="@string/theme_dark" />
+                <item
+                    android:id="@+id/theme_burgundy"
+                    android:checkable="true"
+                    android:title="@string/theme_burgundy" />
+            </group>
+        </menu>
+    </item>
+</menu>

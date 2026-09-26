@@ -1,3 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">MultiNotepad</string>
+    <string name="app_name">Мультиблокнот</string>
+    <string name="main_subtitle">Блокнот с другом по Bluetooth — пишите и редактируйте вместе</string>
+    <string name="create_notepad">Создать блокнот</string>
+    <string name="create_notepad_description">Это устройство станет хостом и покажет код подключения.</string>
+    <string name="join_notepad">Подключиться</string>
+    <string name="join_notepad_description">Выберите сопряжённое устройство друга и введите его код.</string>
+    <string name="privacy_note">Без интернета • данные передаются напрямую</string>
+    <string name="telegram">Telegram · vm2 studios</string>
+    <string name="app_icon_description">Иконка приложения «Мультиблокнот»</string>
+    <string name="link_open_failed">Не удалось открыть ссылку.</string>
+
+    <string name="host_title">Общий блокнот</string>
+    <string name="client_title">Подключение к другу</string>
+    <string name="status_waiting">Ожидание подключения</string>
+    <string name="status_connecting">Подключение…</string>
+    <string name="status_connected">Друг подключён</string>
+    <string name="status_disconnected">Соединение потеряно</string>
+    <string name="status_auth_failed">Отклонена попытка с неверным кодом</string>
+    <string name="connection_status">Состояние подключения</string>
+    <string name="access_code_label">Код доступа</string>
+    <string name="access_code_hint">Сообщите этот код другу</string>
+    <string name="connected_count_zero">Подключено: 0</string>
+    <string name="connected_count_one">Подключено: 1</string>
+    <string name="note_hint">Начните писать вместе…</string>
+    <string name="note_read_only_hint">Подключитесь, чтобы редактировать</string>
+    <string name="how_to_connect">Как подключиться</string>
+    <string name="host_help_title">Подключение друга</string>
+    <string name="host_help_message">1. Сопрягите телефоны в настройках Bluetooth.\n2. Оставьте этот экран открытым.\n3. На втором телефоне нажмите «Подключиться».\n4. Выберите это устройство и введите показанный шестизначный код.</string>
+    <string name="close">Закрыть</string>
+
+    <string name="select_device">Выбрать устройство</string>
+    <string name="select_host_device">Выберите устройство друга</string>
+    <string name="paired_devices_empty">Нет сопряжённых устройств. Сначала сопрягите телефоны в настройках Bluetooth.</string>
+    <string name="open_bluetooth_settings">Открыть настройки Bluetooth</string>
+    <string name="access_code_dialog_title">Код доступа</string>
+    <string name="access_code_dialog_message">Введите шестизначный код с экрана друга.</string>
+    <string name="access_code_input_hint">000000</string>
+    <string name="connect">Подключиться</string>
+    <string name="cancel">Отмена</string>
+    <string name="reconnect">Подключиться снова</string>
+    <string name="wrong_code">Неверный код доступа</string>
+    <string name="connection_failed">Не удалось подключиться</string>
+    <string name="connection_closed">Соединение закрыто</string>
+    <string name="bluetooth_required">Для работы нужен доступ к Bluetooth.</string>
+    <string name="bluetooth_not_supported">Bluetooth не поддерживается на этом устройстве.</string>
+    <string name="bluetooth_disabled">Включите Bluetooth, чтобы продолжить.</string>
+    <string name="server_start_failed">Не удалось запустить общий блокнот.</string>
+    <string name="unknown_device">Неизвестное устройство</string>
+
+    <string name="theme_menu">Тема</string>
+    <string name="theme_menu_with_value">Тема: %1$s</string>
+    <string name="theme_selected">✓ %1$s</string>
+    <string name="theme_light">Светлая</string>
+    <string name="theme_dark">Тёмная</string>
+    <string name="theme_burgundy">Бордовая</string>
 </resources>

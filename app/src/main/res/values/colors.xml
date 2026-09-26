@@ -1,5 +1,36 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+    <color name="light_primary">#3567B7</color>
+    <color name="light_on_primary">#FFFFFFFF</color>
+    <color name="light_primary_container">#D9E5FF</color>
+    <color name="light_on_primary_container">#082A57</color>
+    <color name="light_surface">#FFFDFD</color>
+    <color name="light_surface_variant">#EEF1F7</color>
+    <color name="light_on_surface">#1B1B1F</color>
+    <color name="light_on_surface_variant">#5B606A</color>
+    <color name="light_outline">#747983</color>
+
+    <color name="dark_primary">#A9C7FF</color>
+    <color name="dark_on_primary">#002F66</color>
+    <color name="dark_primary_container">#174B86</color>
+    <color name="dark_on_primary_container">#D7E5FF</color>
+    <color name="dark_surface">#121318</color>
+    <color name="dark_surface_variant">#24262D</color>
+    <color name="dark_on_surface">#E5E2E7</color>
+    <color name="dark_on_surface_variant">#C6C6D0</color>
+    <color name="dark_outline">#90909A</color>
+
+    <color name="burgundy_primary">#892929</color>
+    <color name="burgundy_on_primary">#FFFFFFFF</color>
+    <color name="burgundy_primary_container">#FFDAD6</color>
+    <color name="burgundy_on_primary_container">#3B0808</color>
+    <color name="burgundy_surface">#FFF8F7</color>
+    <color name="burgundy_surface_variant">#F6E5E3</color>
+    <color name="burgundy_on_surface">#271817</color>
+    <color name="burgundy_on_surface_variant">#66504E</color>
+    <color name="burgundy_outline">#88716E</color>
+
+    <color name="status_connected">#2E7D32</color>
+    <color name="status_waiting">#C16A00</color>
+    <color name="status_disconnected">#B3261E</color>
 </resources>

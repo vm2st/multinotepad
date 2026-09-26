@@ -1,74 +1,107 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/rootContainer"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:gravity="center"
-    android:padding="16dp">
+    android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/tvStatus"
-        android:layout_width="wrap_content"
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/topAppBar"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:textSize="18sp"
-        android:layout_gravity="center_horizontal"/>
-
-    <ImageButton
-        android:id="@+id/btnRetry"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@android:drawable/ic_menu_rotate"
-        android:visibility="gone"
-        android:layout_gravity="center_horizontal"
-        android:background="?android:attr/selectableItemBackgroundBorderless"
-        android:contentDescription="Повторить"/>
+        android:minHeight="56dp"
+        android:background="?attr/colorSurface"
+        android:elevation="1dp"
+        app:menu="@menu/theme_menu"
+        app:title="@string/client_title"
+        app:titleTextColor="?attr/colorOnSurface" />
 
     <LinearLayout
-        android:id="@+id/layoutContent"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:orientation="vertical"
-        android:visibility="gone">
+        android:paddingStart="16dp"
+        android:paddingTop="12dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="12dp">
 
-        <LinearLayout
-            android:id="@+id/layoutConnectionStatus"
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:visibility="gone">
+            app:cardBackgroundColor="?attr/colorSurfaceVariant"
+            app:cardCornerRadius="18dp"
+            app:cardElevation="0dp">
 
-            <TextView
-                android:id="@+id/tvConnectionState"
-                android:layout_width="0dp"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:textSize="16sp"
-                android:text="ПОДКЛЮЧЕН"
-                android:textColor="#00FF00"
-                android:gravity="center"/>
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="16dp">
 
-            <ImageButton
-                android:id="@+id/btnReconnect"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@android:drawable/ic_menu_rotate"
-                android:visibility="gone"
-                android:background="?android:attr/selectableItemBackgroundBorderless"
-                android:contentDescription="Переподключиться"/>
-        </LinearLayout>
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
 
-        <EditText
-            android:id="@+id/etContent"
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:tag="theme_secondary"
+                        android:text="@string/connection_status"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:textSize="13sp" />
+
+                    <TextView
+                        android:id="@+id/tvStatus"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:text="@string/status_disconnected"
+                        android:textColor="@color/status_disconnected"
+                        android:textSize="17sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnConnect"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/select_device" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/noteInputLayout"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="top"
-            android:hint="Текст блокнота..."
-            android:maxLines="1000"
-            android:background="@android:drawable/editbox_background"
-            android:padding="8dp"
-            android:textColor="#000000"/>
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_marginTop="12dp"
+            android:hint="@string/note_read_only_hint"
+            app:boxBackgroundMode="outline"
+            app:boxCornerRadiusBottomEnd="16dp"
+            app:boxCornerRadiusBottomStart="16dp"
+            app:boxCornerRadiusTopEnd="16dp"
+            app:boxCornerRadiusTopStart="16dp">
 
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etContent"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:enabled="false"
+                android:gravity="top|start"
+                android:inputType="textCapSentences|textMultiLine"
+                android:maxLines="10000"
+                android:minHeight="240dp"
+                android:padding="16dp"
+                android:scrollbars="vertical"
+                android:textColor="?attr/colorOnSurface"
+                android:textColorHint="?attr/colorOnSurfaceVariant"
+                android:textSize="17sp" />
+        </com.google.android.material.textfield.TextInputLayout>
     </LinearLayout>
-
 </LinearLayout>

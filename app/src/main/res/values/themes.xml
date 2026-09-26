@@ -1,9 +1,52 @@
-<resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
-    <style name="Base.Theme.MultiNotepad" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.MultiNotepad" parent="Theme.MultiNotepad.Light" />
+
+    <style name="Theme.MultiNotepad.Light" parent="Theme.Material3.Light.NoActionBar">
+        <item name="colorPrimary">@color/light_primary</item>
+        <item name="colorOnPrimary">@color/light_on_primary</item>
+        <item name="colorPrimaryContainer">@color/light_primary_container</item>
+        <item name="colorOnPrimaryContainer">@color/light_on_primary_container</item>
+        <item name="colorSurface">@color/light_surface</item>
+        <item name="colorSurfaceVariant">@color/light_surface_variant</item>
+        <item name="colorOnSurface">@color/light_on_surface</item>
+        <item name="colorOnSurfaceVariant">@color/light_on_surface_variant</item>
+        <item name="colorOutline">@color/light_outline</item>
+        <item name="android:windowBackground">@color/light_surface</item>
+        <item name="android:statusBarColor">@color/light_surface</item>
+        <item name="android:navigationBarColor">@color/light_surface</item>
+        <item name="android:windowLightStatusBar">true</item>
     </style>
 
-    <style name="Theme.MultiNotepad" parent="Base.Theme.MultiNotepad" />
+    <style name="Theme.MultiNotepad.Dark" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="colorPrimary">@color/dark_primary</item>
+        <item name="colorOnPrimary">@color/dark_on_primary</item>
+        <item name="colorPrimaryContainer">@color/dark_primary_container</item>
+        <item name="colorOnPrimaryContainer">@color/dark_on_primary_container</item>
+        <item name="colorSurface">@color/dark_surface</item>
+        <item name="colorSurfaceVariant">@color/dark_surface_variant</item>
+        <item name="colorOnSurface">@color/dark_on_surface</item>
+        <item name="colorOnSurfaceVariant">@color/dark_on_surface_variant</item>
+        <item name="colorOutline">@color/dark_outline</item>
+        <item name="android:windowBackground">@color/dark_surface</item>
+        <item name="android:statusBarColor">@color/dark_surface</item>
+        <item name="android:navigationBarColor">@color/dark_surface</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+
+    <style name="Theme.MultiNotepad.Burgundy" parent="Theme.Material3.Light.NoActionBar">
+        <item name="colorPrimary">@color/burgundy_primary</item>
+        <item name="colorOnPrimary">@color/burgundy_on_primary</item>
+        <item name="colorPrimaryContainer">@color/burgundy_primary_container</item>
+        <item name="colorOnPrimaryContainer">@color/burgundy_on_primary_container</item>
+        <item name="colorSurface">@color/burgundy_surface</item>
+        <item name="colorSurfaceVariant">@color/burgundy_surface_variant</item>
+        <item name="colorOnSurface">@color/burgundy_on_surface</item>
+        <item name="colorOnSurfaceVariant">@color/burgundy_on_surface_variant</item>
+        <item name="colorOutline">@color/burgundy_outline</item>
+        <item name="android:windowBackground">@color/burgundy_surface</item>
+        <item name="android:statusBarColor">@color/burgundy_surface</item>
+        <item name="android:navigationBarColor">@color/burgundy_surface</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
 </resources>
