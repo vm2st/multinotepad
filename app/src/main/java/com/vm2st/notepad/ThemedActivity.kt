@@ -27,11 +27,27 @@ import com.google.android.material.textfield.TextInputLayout
 enum class AppTheme(
     val preferenceValue: String,
     @StringRes val labelRes: Int,
-    @StyleRes val styleRes: Int
+    @StyleRes val styleRes: Int,
+    @StyleRes val popupStyleRes: Int
 ) {
-    LIGHT("light", R.string.theme_light, R.style.Theme_MultiNotepad_Light),
-    DARK("dark", R.string.theme_dark, R.style.Theme_MultiNotepad_Dark),
-    BURGUNDY("burgundy", R.string.theme_burgundy, R.style.Theme_MultiNotepad_Burgundy);
+    LIGHT(
+        "light",
+        R.string.theme_light,
+        R.style.Theme_MultiNotepad_Light,
+        R.style.ThemeOverlay_MultiNotepad_Popup_Light
+    ),
+    DARK(
+        "dark",
+        R.string.theme_dark,
+        R.style.Theme_MultiNotepad_Dark,
+        R.style.ThemeOverlay_MultiNotepad_Popup_Dark
+    ),
+    BURGUNDY(
+        "burgundy",
+        R.string.theme_burgundy,
+        R.style.Theme_MultiNotepad_Burgundy,
+        R.style.ThemeOverlay_MultiNotepad_Popup_Burgundy
+    );
 
     companion object {
         fun from(value: String?): AppTheme =
@@ -93,6 +109,7 @@ abstract class ThemedActivity : AppCompatActivity() {
             }
         }
 
+        toolbar.setPopupTheme(selectedTheme.popupStyleRes)
         updateThemeMenu(toolbar)
         toolbar.setOnMenuItemClickListener { item ->
             handleThemeMenuItem(item)
@@ -188,7 +205,7 @@ abstract class ThemedActivity : AppCompatActivity() {
             onPrimary,
             outline
         )
-        themedToolbar.setPopupTheme(appTheme.styleRes)
+        themedToolbar.setPopupTheme(appTheme.popupStyleRes)
         updateThemeMenu(themedToolbar)
     }
 
@@ -217,15 +234,23 @@ abstract class ThemedActivity : AppCompatActivity() {
             is MaterialButton -> tintButton(view, surface, primary, onPrimary)
 
             is TextInputLayout -> {
-                view.boxBackgroundColor = surface
-                view.boxStrokeColor = primary
+                view.boxBackgroundColor = Color.TRANSPARENT
+                view.setBoxStrokeColorStateList(
+                    ColorStateList(
+                        arrayOf(
+                            intArrayOf(android.R.attr.state_focused),
+                            intArrayOf()
+                        ),
+                        intArrayOf(primary, outline)
+                    )
+                )
                 view.defaultHintTextColor = ColorStateList.valueOf(onSurfaceVariant)
             }
 
             is EditText -> {
                 view.setTextColor(onSurface)
                 view.setHintTextColor(onSurfaceVariant)
-                view.backgroundTintList = ColorStateList.valueOf(primary)
+                view.backgroundTintList = null
             }
 
             is TextView -> {

@@ -49,4 +49,34 @@
         <item name="android:navigationBarColor">@color/burgundy_surface</item>
         <item name="android:windowLightStatusBar">true</item>
     </style>
+
+    <style name="ThemeOverlay.MultiNotepad.Popup.Light" parent="ThemeOverlay.Material3.Light">
+        <item name="android:colorBackground">@color/light_surface</item>
+        <item name="android:textColorPrimary">@color/light_on_surface</item>
+        <item name="android:textColorSecondary">@color/light_on_surface_variant</item>
+        <item name="colorSurface">@color/light_surface</item>
+        <item name="colorOnSurface">@color/light_on_surface</item>
+        <item name="colorControlNormal">@color/light_on_surface</item>
+        <item name="colorControlActivated">@color/light_primary</item>
+    </style>
+
+    <style name="ThemeOverlay.MultiNotepad.Popup.Dark" parent="ThemeOverlay.Material3.Dark">
+        <item name="android:colorBackground">@color/dark_surface_variant</item>
+        <item name="android:textColorPrimary">@color/dark_on_surface</item>
+        <item name="android:textColorSecondary">@color/dark_on_surface_variant</item>
+        <item name="colorSurface">@color/dark_surface_variant</item>
+        <item name="colorOnSurface">@color/dark_on_surface</item>
+        <item name="colorControlNormal">@color/dark_on_surface</item>
+        <item name="colorControlActivated">@color/dark_primary</item>
+    </style>
+
+    <style name="ThemeOverlay.MultiNotepad.Popup.Burgundy" parent="ThemeOverlay.Material3.Light">
+        <item name="android:colorBackground">@color/burgundy_surface</item>
+        <item name="android:textColorPrimary">@color/burgundy_on_surface</item>
+        <item name="android:textColorSecondary">@color/burgundy_on_surface_variant</item>
+        <item name="colorSurface">@color/burgundy_surface</item>
+        <item name="colorOnSurface">@color/burgundy_on_surface</item>
+        <item name="colorControlNormal">@color/burgundy_on_surface</item>
+        <item name="colorControlActivated">@color/burgundy_primary</item>
+    </style>
 </resources>
